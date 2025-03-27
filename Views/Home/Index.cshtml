@@ -4,6 +4,8 @@
 	*@
 @{
 }
+<link rel="stylesheet" href="~/css/indexHome.css" asp-append-version="true" />
+
 <h3>@ViewBag.Titulo</h3>
 <p>Estos son nuestros clientes:</p>
 <ul>
@@ -12,9 +14,17 @@
 		<li>@s</li>
 	}
 </ul>
+<div class="card">
+	<a asp-controller="Propietarios" asp-action="Index">🏠 Propietarios</a>
+</div>
+<div class="card">
+	<a asp-controller="Inquilinos" asp-action="Index">👨‍👩‍👧‍👦 Inquilinos</a>
+</div>
 
-<a asp-controller="Propietarios" asp-action="Index">Propietarios</a>
-<a asp-controller="Inquilinos" asp-action="Index">Inquilinos</a>
+<div class="imgIndexHome">
+	<img src="~/img/fondo-Index-Home.jpg" alt="Inmobiliaria" title="Inmobiliaria">
+</div>
+
 
 @* @if (!User.Identity.IsAuthenticated)
 	{
