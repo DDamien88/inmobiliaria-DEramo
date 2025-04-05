@@ -1,0 +1,67 @@
+@model IEnumerable<inmobiliariaDEramo.Models.Contrato>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+@{
+	ViewData["Title"] = "Contratos";
+}
+
+<h1>Contratos</h1>
+<!-- <pre>@Json.Serialize(Model)</pre>  -->
+
+<p>
+	<a asp-action="Create" class="btn btn-primary">Crear nuevo</a>
+</p>
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>@Html.DisplayNameFor(model => model.Id)</th>
+			<th>@Html.DisplayNameFor(model => model.Inquilino)</th>
+			<th>@Html.DisplayNameFor(model => model.Inmueble)</th>
+			<th>@Html.DisplayNameFor(model => model.MontoMensual)</th>
+			<th>@Html.DisplayNameFor(model => model.FechaDesde)</th>
+			<th>@Html.DisplayNameFor(model => model.FechaHasta)</th>
+			<th>Acciones</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<td>@item.Id</td>
+				<td>
+					@item.Inquilino?.Nombre @item.Inquilino?.Apellido<br />
+					DNI: @item.Inquilino?.Dni
+				</td>
+				<td>
+					@if (item.Inmueble != null && item.Inmueble.Duenio != null)
+					{
+						<text>@item.Inmueble.Duenio.Nombre @item.Inmueble.Duenio.Apellido<br /></text>
+						<text>DNI: @item.Inmueble.Duenio.Dni<br /></text>
+					}
+					@if (item.Inmueble != null)
+					{
+						<text>Dirección: @item.Inmueble.Direccion</text>
+					}
+				</td>
+
+				<td>@item.MontoMensual</td>
+				<td>@item.FechaDesde</td>
+				<td>@item.FechaHasta</td>
+				<td>
+					<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm" title="Editar">
+						<i class="fa-solid fa-pen"></i>
+					</a>
+					<a asp-action="Eliminar" asp-route-id="@item.Id" class="btn btn-danger btn-sm" title="Eliminar"
+						onclick="return confirm('¿Seguro que deseas eliminar este contrato?');">
+						<i class="fa-solid fa-trash-can"></i>
+					</a>
+					<a asp-action="Pagar" asp-route-id="@item.Id" class="btn btn-success btn-sm" title="Pagar"
+						onclick="return confirm('¿Seguro que deseas realizar el pago?');">
+						<i class="fa-solid bi bi-cash-coin"></i>
+					</a>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>

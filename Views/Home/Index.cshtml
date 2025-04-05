@@ -5,6 +5,9 @@
 @{
 }
 <link rel="stylesheet" href="~/css/indexHome.css" asp-append-version="true" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 
 <h3>@ViewBag.Titulo</h3>
 <p>Estos son nuestros clientes:</p>
@@ -20,7 +23,12 @@
 <div class="card">
 	<a asp-controller="Inquilinos" asp-action="Index">👨‍👩‍👧‍👦 Inquilinos</a>
 </div>
-
+<div class="card">
+	<a asp-controller="Inmuebles" asp-action="Index"><i class="fa-solid fa-house-chimney-window"></i>Inmuebles</a>
+</div>
+<div class="card">
+	<a asp-controller="Contratos" asp-action="Index"><i class="bi bi-chevron-bar-contract"></i>Contratos</a>
+</div>
 <div class="imgIndexHome">
 	<img src="~/img/fondo-Index-Home.jpg" alt="Inmobiliaria" title="Inmobiliaria">
 </div>

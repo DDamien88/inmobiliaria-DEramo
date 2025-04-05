@@ -82,19 +82,22 @@ namespace inmobiliariaDEramo.Controllers
 		}
 
 		// GET: Inquilino/Buscar/5
-		[Route("[controller]/Buscar/{q}", Name = "Buscar")]
+		[HttpGet]
+		[Route("Inquilinos/Buscar/{q}")]
 		public IActionResult Buscar(string q)
 		{
 			try
 			{
 				var res = repositorio.BuscarPorNombre(q);
-				return Json(new { Datos = res });
+				return Json(new { datos = res });
 			}
 			catch (Exception ex)
 			{
-				return Json(new { Error = ex.Message });
+				return Json(new { error = ex.Message });
 			}
 		}
+
+
 
 		// GET: Inquilino/Create
 		public ActionResult Create()

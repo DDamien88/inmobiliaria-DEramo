@@ -15,6 +15,8 @@ builder.Services.AddDbContext<DataContext>(options =>
 // Registrar repositorios
 builder.Services.AddScoped<IRepositorioPropietario, RepositorioPropietarioMySql>();
 builder.Services.AddScoped<IRepositorioInquilino, RepositorioInquilinoMysql>();
+builder.Services.AddScoped<IRepositorioInmueble, RepositorioInmueble>();
+builder.Services.AddScoped<IRepositorioContrato, RepositorioContrato>();
 
 
 // Agregar servicios MVC

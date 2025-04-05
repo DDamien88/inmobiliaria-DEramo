@@ -82,7 +82,7 @@ namespace inmobiliariaDEramo.Controllers
 		}
 
 		// GET: Propietario/Buscar/5
-		[Route("[controller]/Buscar/{q}", Name = "BuscarInquilinos")]
+		/*[Route("[controller]/Buscar/{q}", Name = "BuscarPropietario")]
 		public IActionResult Buscar(string q)
 		{
 			try
@@ -94,7 +94,7 @@ namespace inmobiliariaDEramo.Controllers
 			{
 				return Json(new { Error = ex.Message });
 			}
-		}
+		}*/
 
 		// GET: Propietario/Create
 		public ActionResult Create()
@@ -308,5 +308,18 @@ namespace inmobiliariaDEramo.Controllers
 				throw;
 			}
 		}
+
+		[HttpGet]
+		public JsonResult Buscar(string id)
+		{
+			var propietarios = repositorio.ObtenerTodos()
+				.Where(p => (p.Nombre + " " + p.Apellido + " " + p.Dni).ToLower().Contains(id.ToLower()))
+				.Select(p => new { idPropietario = p.IdPropietario, nombre = p.Nombre, apellido = p.Apellido, dni = p.Dni })
+				.ToList();
+
+			return Json(new { datos = propietarios });
+		}
+
+
 	}
 }

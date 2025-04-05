@@ -157,7 +157,7 @@ namespace inmobiliariaDEramo.Models
 			{
 				string sql = @"SELECT 
 					IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave 
-					FROM Propietarios
+					FROM propietarios
 					WHERE IdPropietario=@id";
 				using (var command = new MySqlCommand(sql, connection))
 				{
@@ -191,7 +191,7 @@ namespace inmobiliariaDEramo.Models
 			{
 				string sql = @$"SELECT 
 					{nameof(Propietario.IdPropietario)}, Nombre, Apellido, Dni, Telefono, Email, Clave 
-					FROM Propietarios
+					FROM propietarios
 					WHERE Email=@email";
 				using (var command = new MySqlCommand(sql, connection))
 				{
@@ -227,7 +227,7 @@ namespace inmobiliariaDEramo.Models
 			{
 				string sql = @"SELECT
 					IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave 
-					FROM Propietarios
+					FROM propietarios
 					WHERE Nombre LIKE @nombre OR Apellido LIKE @nombre";
 				using (var command = new MySqlCommand(sql, connection))
 				{

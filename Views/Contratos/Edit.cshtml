@@ -1,0 +1,114 @@
+@model inmobiliariaDEramo.Models.Contrato
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<h1>Editar Contrato</h1>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label>Inquilino</label>
+                <select id="Inquilino" class="form-control" name="IdInquilino" required></select>
+                <span asp-validation-for="IdInquilino" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Inmueble</label>
+                <select id="Inmueble" class="form-control" name="IdInmueble" required></select>
+                <span asp-validation-for="IdInmueble" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MontoMensual" class="control-label"></label>
+                <input asp-for="MontoMensual" class="form-control" required />
+                <span asp-validation-for="MontoMensual" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaDesde" class="control-label"></label>
+                <input asp-for="FechaDesde" type="datetime-local" class="form-control" required />
+                <span asp-validation-for="FechaDesde" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaHasta" class="control-label"></label>
+                <input asp-for="FechaHasta" type="datetime-local" class="form-control" required />
+                <span asp-validation-for="FechaHasta" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-3">
+                <input type="submit" value="Guardar cambios" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Volver</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const idInquilino = @Model.IdInquilino;
+            const textoInquilino = "@(Model.Inquilino?.Nombre + " " + Model.Inquilino?.Apellido)";
+            const idInmueble = @Model.IdInmueble;
+            const textoInmueble = "@(Model.Inmueble?.Direccion)";
+
+            // Inquilino
+            $('#Inquilino').select2({
+                language: "es",
+                theme: "bootstrap",
+                placeholder: "Buscar inquilino...",
+                minimumInputLength: 3,
+                ajax: {
+                    delay: 250,
+                    url: (params) => `/Inquilinos/Buscar/${params.term}`,
+                    dataType: 'json',
+                    processResults: res => ({
+                        results: res.datos.map(i => ({
+                            id: i.idInquilino,
+                            text: `${i.nombre} ${i.apellido} ${i.dni}`
+                        }))
+                    })
+                }
+            });
+
+            if (idInquilino) {
+                const option = new Option(textoInquilino, idInquilino, true, true);
+                $('#Inquilino').append(option).trigger('change');
+            }
+
+            // Inmueble
+            $('#Inmueble').select2({
+                language: "es",
+                theme: "bootstrap",
+                placeholder: "Buscar inmueble...",
+                minimumInputLength: 3,
+                ajax: {
+                    delay: 250,
+                    url: (params) => `/Inmuebles/Buscar/${params.term}`,
+                    dataType: 'json',
+                    processResults: res => ({
+                        results: res.datos.map(i => ({
+                            id: i.idInmueble,
+                            text: `${i.direccion} - ${i.uso} - ${i.tipo} | Propietario: ${i.propietario.nombre} ${i.propietario.apellido} (${i.propietario.dni})`
+                        }))
+                    })
+                }
+            });
+
+            if (idInmueble) {
+                const option = new Option(textoInmueble, idInmueble, true, true);
+                $('#Inmueble').append(option).trigger('change');
+            }
+
+            // Validación de fechas
+            @* $('form').on('submit', function (e) {
+                const hoy = new Date().toISOString().split('T')[0];
+                const fechaDesde = $('#FechaDesde').val();
+                const fechaHasta = $('#FechaHasta').val();
+
+                if (fechaDesde < hoy || fechaHasta < hoy || fechaHasta < fechaDesde) {
+                    e.preventDefault();
+                    alert("Verificá que las fechas no sean anteriores a hoy y que la fecha de finalización sea posterior a la de inicio.");
+                }*@
+        }); 
+    </script>
+}
