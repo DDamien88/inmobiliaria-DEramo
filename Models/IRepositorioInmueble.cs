@@ -9,5 +9,7 @@ namespace inmobiliariaDEramo.Models
 	{
 		IList<Inmueble> BuscarPorPropietario(int idPropietario);
 		IList<Inmueble> BuscarPorDireccion(string direccion);
+		IList<Inmueble> Activar(int id);
+		int ModificarPortada(int InmuebleId, string ruta);
 	}
 }

@@ -10,5 +10,6 @@ namespace inmobiliariaDEramo.Models
 		Propietario ObtenerPorEmail(string email);
 		IList<Propietario> BuscarPorNombre(string nombre);
 		IList<Propietario> ObtenerLista(int paginaNro, int tamPagina);
+		IList<Propietario> Activar(int idPropietario);
 	}
 }

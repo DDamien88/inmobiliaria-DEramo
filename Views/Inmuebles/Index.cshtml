@@ -2,27 +2,87 @@
 
 @{
 	ViewData["Title"] = "Inmuebles";
+	var rnd = new Random();
+	var estadoSeleccionado = ViewBag.EstadoSeleccionado?.ToString();
+	var propietarioSeleccionado = ViewBag.PropietarioSeleccionado as string ?? "";
 }
 
 <h1>Inmuebles</h1>
 
+<form method="get" class="row g-3 align-items-end mb-3">
+	<div class="col-md-3">
+		<label for="fechaDesde" class="form-label">Desde</label>
+		<input type="date" class="form-control" name="fechaDesde" value="@ViewBag.FechaDesde" />
+	</div>
+	<div class="col-md-3">
+		<label for="fechaHasta" class="form-label">Hasta</label>
+		<input type="date" class="form-control" name="fechaHasta" value="@ViewBag.FechaHasta" />
+	</div>
+	<div class="col-md-3">
+		<button type="submit" class="btn btn-primary">Filtrar por disponibilidad</button>
+	</div>
+</form>
+
+
+
+<form method="get" asp-action="Index" class="mb-3 row g-3 align-items-end">
+	<div class="col-md-4">
+		<label for="estado" class="form-label">Disponibilidad</label>
+		<select name="estado" class="form-select" id="estado">
+			<option value="">-- Todos --</option>
+			<option value="1" selected="@(estadoSeleccionado == "1")">Activos</option>
+			<option value="0" selected="@(estadoSeleccionado == "0")">Inactivos</option>
+
+		</select>
+	</div>
+
+	<div class="col-md-5">
+		<select id="propietario" name="propietarioId" class="form-select" style="width: 100%"></select>
+	</div>
+	@* <div class="col-md-2">
+		<button type="submit" class="btn btn-primary w-100">Filtrar por propietario</button>
+	</div> *@
+
+
+	<div class="col-md-4">
+		<label class="form-label d-block">&nbsp;</label>
+		<button type="submit" class="btn btn-primary">Filtrar</button>
+		<a asp-action="Index" class="btn btn-secondary">Limpiar</a>
+	</div>
+</form>
+
 <p>
-	<a asp-action="Ver" asp-route-id="0" class="btn btn-primary">Crear nuevo</a>
+	<a asp-action="Ver" asp-route-id="0" class="btn btn-success">Crear nuevo</a>
 </p>
+
+
+@if (!Model.Any())
+{
+	var estadoTexto = estadoSeleccionado == "1" ? "Activos" : (estadoSeleccionado == "0" ? "Inactivos" : "Todos");
+	var propietarioTexto = string.IsNullOrEmpty(propietarioSeleccionado) ? "éste propietario" :
+	ViewBag.PropietarioNombre;
+
+	<div class="alert alert-info">
+		No se encontraron inmuebles @estadoTexto para @propietarioTexto.
+	</div>
+}
+
 
 <table class="table table-striped">
 	<thead>
 		<tr>
-			<th>@Html.DisplayNameFor(model => model.Id)</th>
-			<th>@Html.DisplayNameFor(model => model.Direccion)</th>
-			<th>@Html.DisplayNameFor(model => model.Uso)</th>
-			<th>@Html.DisplayNameFor(model => model.Tipo)</th>
-			<th>@Html.DisplayNameFor(model => model.Precio)</th>
-			<th>@Html.DisplayNameFor(model => model.Ambientes)</th>
-			<th>@Html.DisplayNameFor(model => model.Superficie)</th>
-			<th>@Html.DisplayNameFor(model => model.Latitud)</th>
-			<th>@Html.DisplayNameFor(model => model.Longitud)</th>
+			<th>ID</th>
+			<th>Dirección</th>
+			<th>Uso</th>
+			<th>Tipo</th>
+			<th>Precio</th>
+			<th>Ambientes</th>
+			<th>Superficie</th>
+			<th>Latitud</th>
+			<th>Longitud</th>
 			<th>Propietario</th>
+			<th>Portada</th>
+			<th>Estado</th>
 			<th>Acciones</th>
 		</tr>
 	</thead>
@@ -41,15 +101,98 @@
 				<td>@item.Longitud</td>
 				<td>@(item.Duenio != null ? item.Duenio.Nombre + " " + item.Duenio.Apellido : "Sin asignar")</td>
 				<td>
-					<a asp-action="Ver" asp-route-id="@item.Id" class="btn btn-warning btn-sm" title="Edit">
+					@if (!string.IsNullOrEmpty(item.Portada))
+					{
+						var x = item.Portada + "?" + rnd.Next();
+						<img width="100" src="@x" class="img-thumbnail" />
+					}
+					else
+					{
+						<span>Sin foto</span>
+					}
+				</td>
+				<td>
+					@if (item.Activo)
+					{
+						<span class="badge bg-success">Activo</span>
+					}
+					else
+					{
+						<span class="badge bg-danger">Inactivo</span>
+					}
+				</td>
+				<td>
+					<a asp-action="Ver" asp-route-id="@item.Id" class="btn btn-warning btn-sm" title="Editar">
 						<i class="fa-solid fa-pen"></i>
 					</a>
 					<a asp-action="Eliminar" asp-route-id="@item.Id" class="btn btn-danger btn-sm" title="Eliminar"
 						onclick="return confirm('¿Seguro que deseas eliminar este inmueble?');">
 						<i class="fa-solid fa-trash-can"></i>
 					</a>
+					<a asp-action="Activar" asp-route-id="@item.Id" class="btn btn-outline-success btn-sm" title="Activar">
+						<i class="fa-solid fa-check"></i>
+					</a>
+					<a asp-action="Imagenes" asp-route-id="@item.Id" class="btn btn-secondary btn-sm" title="Ver imágenes">
+						<i class="fa-solid fa-images"></i>
+					</a>
 				</td>
 			</tr>
 		}
+
+		<nav aria-label="Paginación">
+			<ul class="pagination justify-content-center">
+				@for (int i = 1; i <= (int)ViewBag.TotalPaginas; i++)
+				{
+					<li class="page-item @(i == (int)ViewBag.PaginaActual ? "active" : "")">
+						<a class="page-link" asp-action="Index" asp-route-pagina="@i"
+							asp-route-estado="@ViewBag.EstadoSeleccionado"
+							asp-route-propietarioId="@ViewBag.PropietarioSeleccionado">
+							@i
+						</a>
+					</li>
+				}
+			</ul>
+		</nav>
+
 	</tbody>
 </table>
+
+@section Scripts {
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+
+	<script>
+		$(document).ready(function () {
+			const propietarioSeleccionado = "@propietarioSeleccionado";
+			const propietarioTexto = "@ViewBag.PropietarioNombre";
+
+			$('#propietario').select2({
+				theme: 'bootstrap-5',
+				placeholder: "Buscar propietario...",
+				allowClear: true,
+				ajax: {
+					url: '/Propietarios/Buscar',
+					dataType: 'json',
+					delay: 250,
+					data: function (params) {
+						return { id: params.term };
+					},
+					processResults: function (res) {
+						return {
+							results: res.datos.map(p => ({
+								id: p.idPropietario,
+								text: `${p.nombre} ${p.apellido} (${p.dni})`
+							}))
+						};
+					}
+				}
+
+			});
+
+			if (propietarioSeleccionado && propietarioTexto) {
+				var option = new Option(propietarioTexto, propietarioSeleccionado, true, true);
+				$('#propietario').append(option).trigger('change');
+			}
+		});
+	</script>
+}

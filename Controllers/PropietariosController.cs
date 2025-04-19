@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using inmobiliariaDEramo.Models;
+﻿using inmobiliariaDEramo.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 
 namespace inmobiliariaDEramo.Controllers
 {
+	[Authorize]
 	public class PropietariosController : Controller
 	{
 		// Sin inyección de dependencias (crear dentro del ctor)
@@ -38,8 +34,8 @@ namespace inmobiliariaDEramo.Controllers
 		{
 			try
 			{
-				//var lista = repositorio.ObtenerTodos();
-				var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), 5);
+				var lista = repositorio.ObtenerTodos();
+				// var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), 5);
 				ViewBag.Id = TempData["Id"];
 				// TempData es para pasar datos entre acciones
 				// ViewBag/Data es para pasar datos del controlador a la vista
@@ -49,8 +45,9 @@ namespace inmobiliariaDEramo.Controllers
 				return View(lista);
 			}
 			catch (Exception ex)
-			{// Poner breakpoints para detectar errores
+			{//poner breakpoints para detectar errores
 				throw;
+
 			}
 		}
 
@@ -318,6 +315,24 @@ namespace inmobiliariaDEramo.Controllers
 				.ToList();
 
 			return Json(new { datos = propietarios });
+		}
+
+
+
+		public ActionResult Activar(int id)
+		{
+			try
+			{
+				repositorio.Activar(idPropietario: id);
+				TempData["Mensaje"] = "Activación realizada correctamente";
+				return RedirectToAction(nameof(Index));
+			}
+			catch (Exception ex)
+			{
+				//poner breakpoints para detectar errores
+				ModelState.AddModelError("", "Ocurrio un error al activar el propietario.");
+				throw;
+			}
 		}
 
 

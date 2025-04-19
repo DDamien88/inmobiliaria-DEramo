@@ -1,31 +1,171 @@
 using inmobiliariaDEramo.Models;
+using InmobiliariaDEramo.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+
 
 namespace inmobiliariaDEramo.Controllers
 {
-    // [Authorize]
+    [Authorize]
     public class InmueblesController : Controller
     {
         private readonly IRepositorioInmueble repositorio;
         private readonly IRepositorioPropietario repoPropietario;
 
-        public InmueblesController(IRepositorioInmueble repositorio, IRepositorioPropietario repoPropietrio)
+        private readonly IRepositorioContrato repoContratos;
+
+        public InmueblesController(IRepositorioInmueble repositorio, IRepositorioPropietario repoPropietrio, IRepositorioContrato repositorioContratos)
         {
             this.repositorio = repositorio;
             this.repoPropietario = repoPropietrio;
+            this.repoContratos = repositorioContratos;
         }
 
-        // GET: Inmueble
-        public ActionResult Index()
+        // GET: Inmuebles
+        [HttpGet]
+        public IActionResult Index(int? estado, int pagina = 1, int cantidad = 10, int? propietarioId = null, DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
-            var lista = repositorio.ObtenerTodos();
-            /*if (TempData.ContainsKey("Id"))
-                ViewBag.Id = TempData["Id"];
-            if (TempData.ContainsKey("Mensaje"))
-                ViewBag.Mensaje = TempData["Mensaje"];*/
-            return View(lista);
+            var inmuebles = repositorio.ObtenerTodos();
+
+            if (fechaDesde.HasValue && fechaHasta.HasValue)
+            {
+                var contratos = repoContratos.ObtenerTodos();
+
+                var ocupados = contratos
+                    .Where(c =>
+                        c.FechaDesde <= fechaHasta && c.FechaHasta >= fechaDesde)
+                    .Select(c => c.IdInmueble)
+                    .Distinct();
+
+                inmuebles = inmuebles
+                    .Where(i => !ocupados.Contains(i.Id))
+                    .ToList();
+
+                ViewBag.FechaDesde = fechaDesde?.ToString("yyyy-MM-dd");
+                ViewBag.FechaHasta = fechaHasta?.ToString("yyyy-MM-dd");
+            }
+
+
+
+            // Filtrar por estado si se indicó
+            if (estado.HasValue)
+            {
+                inmuebles = inmuebles.Where(i => i.Activo == (estado == 1)).ToList();
+                ViewBag.EstadoSeleccionado = estado.Value.ToString();
+            }
+            else
+            {
+                ViewBag.EstadoSeleccionado = "";
+            }
+
+            if (propietarioId.HasValue)
+            {
+                var propietario = repoPropietario.ObtenerPorId(propietarioId.Value);
+                if (propietario != null)
+                {
+                    inmuebles = inmuebles.Where(i => i.PropietarioId == propietarioId.Value).ToList();
+                    ViewBag.PropietarioNombre = propietario.Nombre + " " + propietario.Apellido;
+                }
+                else
+                {
+                    ViewBag.PropietarioNombre = "";
+                }
+            }
+            else
+            {
+                ViewBag.PropietarioNombre = "";
+            }
+
+            // Paginado
+            int total = inmuebles.Count;
+            int totalPaginas = (int)Math.Ceiling(total / (double)cantidad);
+
+            var inmueblesPaginados = inmuebles
+                .Skip((pagina - 1) * cantidad)
+                .Take(cantidad)
+                .ToList();
+
+            ViewBag.PaginaActual = pagina;
+            ViewBag.TotalPaginas = totalPaginas;
+            ViewBag.Cantidad = cantidad;
+
+            return View(inmueblesPaginados);
         }
+
+
+
+
+
+
+        // GET: Inmueble/Imagenes/5
+        public ActionResult Imagenes(int id, [FromServices] IRepositorioImagen repoImagen)
+        {
+            var entidad = repositorio.ObtenerPorId(id);
+            entidad.Imagenes = repoImagen.BuscarPorInmueble(id);
+            return View(entidad);
+        }
+
+
+
+        // POST: Inmueble/Portada
+        [HttpPost]
+        public ActionResult Portada(Imagen entidad, IFormFile Archivo, int InmuebleId, [FromServices] IWebHostEnvironment environment)
+        {
+
+
+            if (Archivo == null)
+            {
+                TempData["Error"] = "Archivo no recibido.";
+                return RedirectToAction("Imagenes", new { id = InmuebleId });
+            }
+
+            var fileName = "portada_" + InmuebleId + Path.GetExtension(Archivo.FileName);
+            var path = Path.Combine(environment.WebRootPath, "Uploads", "Inmuebles", fileName);
+            using (var stream = new FileStream(path, FileMode.Create))
+            {
+                Archivo.CopyTo(stream);
+            }
+
+            var url = Path.Combine("/Uploads/Inmuebles", fileName);
+            repositorio.ModificarPortada(InmuebleId, url);
+
+            TempData["Mensaje"] = "Portada actualizada correctamente";
+            return RedirectToAction("Index");
+        }
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EliminarPortada(int inmuebleId, [FromServices] IWebHostEnvironment environment)
+        {
+            try
+            {
+                var inmueble = repositorio.ObtenerPorId(inmuebleId);
+                if (inmueble != null && !string.IsNullOrEmpty(inmueble.Portada))
+                {
+                    var rutaCompleta = Path.Combine(environment.WebRootPath, "Uploads", "Inmuebles", Path.GetFileName(inmueble.Portada));
+                    if (System.IO.File.Exists(rutaCompleta))
+                    {
+                        System.IO.File.Delete(rutaCompleta);
+                    }
+
+                    repositorio.ModificarPortada(inmuebleId, null); // o string.Empty
+                    TempData["Mensaje"] = "Portada eliminada correctamente.";
+                }
+                return RedirectToAction(nameof(Imagenes), new { id = inmuebleId });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Imagenes), new { id = inmuebleId });
+            }
+        }
+
+
+
+
+
 
         public ActionResult PorPropietario(int id)
         {
@@ -122,7 +262,7 @@ namespace inmobiliariaDEramo.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    if (inmueble.Id > 0) // Si el Id es mayor a 0, actualiza, si no, crea uno nuevo
+                    if (inmueble.Id > 0)
                     {
                         repositorio.Modificacion(inmueble);
                     }
@@ -130,20 +270,25 @@ namespace inmobiliariaDEramo.Controllers
                     {
                         repositorio.Alta(inmueble);
                     }
+                    TempData["Mensaje"] = "Inmueble guardado correctamente.";
                     return RedirectToAction("Index");
                 }
                 else
                 {
                     ViewBag.Propietarios = repoPropietario.ObtenerTodos();
-                    return View("Index", inmueble);
+                    return View("Ver", inmueble);
                 }
             }
             catch (Exception ex)
             {
+                ViewBag.Propietarios = repoPropietario.ObtenerTodos();
                 ViewBag.Error = ex.Message;
                 return View("Ver", inmueble);
             }
         }
+
+
+
 
         //Buscar
         [HttpGet]
@@ -233,6 +378,22 @@ namespace inmobiliariaDEramo.Controllers
                 ViewBag.Error = ex.Message;
                 ViewBag.StackTrate = ex.StackTrace;
                 return View(entidad);
+            }
+        }
+
+        public ActionResult Activar(int id)
+        {
+            try
+            {
+                repositorio.Activar(id);
+                TempData["Mensaje"] = "Activación realizada correctamente";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                //poner breakpoints para detectar errores
+                ModelState.AddModelError("", "Ocurrio un error al activar el propietario.");
+                throw;
             }
         }
     }

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using InmobiliariaDEramo.Models;
 
 namespace inmobiliariaDEramo.Models
 {
@@ -31,5 +32,25 @@ namespace inmobiliariaDEramo.Models
         public DateTime? FechaHasta { get; set; }
         public Inquilino? Inquilino { get; set; }
         public Inmueble? Inmueble { get; set; }
+
+        public Boolean Activo { get; set; }
+        public DateTime? FechaTerminacionAnticipada { get; set; }
+        public decimal? MontoMulta { get; set; }
+        public bool MultaPagada { get; set; } = false;
+
+        [NotMapped]
+        public bool PuedeRenovarse { get; set; }
+
+        public int? UsuarioAltaId { get; set; }
+        public int? UsuarioBajaId { get; set; }
+
+        [ForeignKey(nameof(UsuarioAltaId))]
+        public Usuario? UsuarioAlta { get; set; }
+
+        [ForeignKey(nameof(UsuarioBajaId))]
+        public Usuario? UsuarioBaja { get; set; }
+
+
+
     }
 }

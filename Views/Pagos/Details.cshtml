@@ -1,0 +1,63 @@
+@model inmobiliariaDEramo.Models.Pago
+
+@{
+    ViewData["Title"] = "Detalle del Pago";
+}
+
+<h2>Detalle del Pago N.º @Model.NumeroPago</h2>
+<hr />
+
+<table class="table table-bordered">
+    <tr>
+        <th>Contrato</th>
+        <td>#@Model.ContratoId</td>
+    </tr>
+    <tr>
+        <th>Fecha</th>
+        <td>@Model.FechaPago.ToString("dd/MM/yyyy")</td>
+    </tr>
+    <tr>
+        <th>Importe</th>
+        <td>@Model.Importe.ToString("C")</td>
+    </tr>
+    <tr>
+        <th>Detalle</th>
+        <td>@Model.Detalle</td>
+    </tr>
+    <tr>
+        <th>Estado</th>
+        <td>
+            @if (Model.Anulado)
+            {
+                <span class="badge bg-danger">Anulado</span>
+            }
+            else
+            {
+                <span class="badge bg-success">Válido</span>
+            }
+        </td>
+    </tr>
+
+    @if (User.IsInRole("Administrador"))
+    {
+        <tr>
+            <th>Registrado por</th>
+            <td>@Model.UsuarioAlta?.Nombre @Model.UsuarioAlta?.Apellido (@Model.UsuarioAlta?.Email)</td>
+        </tr>
+        <tr>
+            <th>Anulado por</th>
+            <td>
+                @if (Model.Anulado && Model.UsuarioBaja != null)
+                {
+                    @($"{Model.UsuarioBaja.Nombre} {Model.UsuarioBaja.Apellido} ({Model.UsuarioBaja.Email})")
+                }
+                else
+                {
+                    <em>No aplica</em>
+                }
+            </td>
+        </tr>
+    }
+</table>
+
+<a asp-action="Index" asp-route-contratoId="@Model.ContratoId" class="btn btn-secondary">Volver a pagos</a>

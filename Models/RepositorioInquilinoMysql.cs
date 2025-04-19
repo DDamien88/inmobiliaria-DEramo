@@ -19,9 +19,9 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"INSERT INTO inquilinos 
-					(Nombre, Apellido, Dni, Telefono, Email) 
+					(Nombre, Apellido, Dni, Telefono, Email, 1) 
 					VALUES (@nombre, @apellido, @dni, @telefono, @email);
-					SELECT LAST_INSERT_ID();";//devuelve el id insertado (SCOPE_IDENTITY para sql)
+					SELECT LAST_INSERT_ID();";
 				using (var command = new MySqlCommand(sql, connection))
 				{
 					command.CommandType = CommandType.Text;
@@ -30,6 +30,7 @@ namespace inmobiliariaDEramo.Models
 					command.Parameters.AddWithValue("@dni", p.Dni);
 					command.Parameters.AddWithValue("@telefono", p.Telefono);
 					command.Parameters.AddWithValue("@email", p.Email);
+					command.Parameters.AddWithValue("@activo", p.Activo);
 					connection.Open();
 					res = Convert.ToInt32(command.ExecuteScalar());
 					p.IdInquilino = res;
@@ -43,7 +44,7 @@ namespace inmobiliariaDEramo.Models
 			int res = -1;
 			using (var connection = new MySqlConnection(connectionString))
 			{
-				string sql = @$"DELETE FROM inquilinos WHERE {nameof(Inquilino.IdInquilino)} = @id";
+				string sql = @$"Update inquilinos SET Activo=0 WHERE {nameof(Inquilino.IdInquilino)} = @id";
 				using (var command = new MySqlCommand(sql, connection))
 				{
 					command.CommandType = CommandType.Text;
@@ -86,7 +87,7 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"SELECT 
-					IdInquilino, Nombre, Apellido, Dni, Telefono, Email
+					IdInquilino, Nombre, Apellido, Dni, Telefono, Email, Activo
 					FROM inquilinos";
 				using (var command = new MySqlCommand(sql, connection))
 				{
@@ -103,6 +104,7 @@ namespace inmobiliariaDEramo.Models
 							Dni = reader.GetString("Dni"),
 							Telefono = reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 						res.Add(p);
 					}
@@ -118,7 +120,7 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @$"
-					SELECT IdInquilino, Nombre, Apellido, Dni, Telefono, Email
+					SELECT IdInquilino, Nombre, Apellido, Dni, Telefono, Email, Activo
 					FROM inquilinos
 					LIMIT {tamPagina} OFFSET {(paginaNro - 1) * tamPagina}
 				";
@@ -131,12 +133,12 @@ namespace inmobiliariaDEramo.Models
 					{
 						Inquilino p = new Inquilino
 						{
-							IdInquilino = reader.GetInt32(nameof(Inquilino.IdInquilino)),//más seguro
-							Nombre = reader.GetString("Nombre"),
+							IdInquilino = reader.GetInt32(nameof(Inquilino.IdInquilino)),
 							Apellido = reader.GetString("Apellido"),
 							Dni = reader.GetString("Dni"),
 							Telefono = reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 						res.Add(p);
 					}
@@ -152,7 +154,7 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"SELECT 
-					IdInquilino, Nombre, Apellido, Dni, Telefono, Email 
+					IdInquilino, Nombre, Apellido, Dni, Telefono, Email, Activo
 					FROM inquilinos
 					WHERE IdInquilino=@id";
 				using (var command = new MySqlCommand(sql, connection))
@@ -171,6 +173,7 @@ namespace inmobiliariaDEramo.Models
 							Dni = reader.GetString("Dni"),
 							Telefono = reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 					}
 					connection.Close();
@@ -185,7 +188,7 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @$"SELECT 
-					{nameof(Inquilino.IdInquilino)}, Nombre, Apellido, Dni, Telefono, Email
+					{nameof(Inquilino.IdInquilino)}, Nombre, Apellido, Dni, Telefono, Email, Activo
 					FROM inquilinos
 					WHERE Email=@email";
 				using (var command = new MySqlCommand(sql, connection))
@@ -204,6 +207,7 @@ namespace inmobiliariaDEramo.Models
 							Dni = reader.GetString("Dni"),
 							Telefono = reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 					}
 					connection.Close();
@@ -220,7 +224,7 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"SELECT
-					IdInquilino, Nombre, Apellido, Dni, Telefono, Email
+					IdInquilino, Nombre, Apellido, Dni, Telefono, Email, Activo
 					FROM inquilinos
 					WHERE Nombre LIKE @nombre OR Apellido LIKE @nombre";
 				using (var command = new MySqlCommand(sql, connection))
@@ -239,11 +243,31 @@ namespace inmobiliariaDEramo.Models
 							Dni = reader.GetString("Dni"),
 							Telefono = reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 						res.Add(p);
 					}
 					connection.Close();
 				}
+			}
+			return res;
+		}
+
+		public IList<Inquilino> Activar(int idInquilino)
+		{
+			IList<Inquilino> res = new List<Inquilino>();
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				string sql = @"UPDATE inquilinos SET Activo=1 WHERE IdInquilino=@idInquilino";
+				using (var command = new MySqlCommand(sql, connection))
+				{
+					command.Parameters.Add("@idInquilino", DbType.Int32).Value = idInquilino;
+					command.CommandType = CommandType.Text;
+					connection.Open();
+					var reader = command.ExecuteReader();
+					connection.Close();
+				}
+
 			}
 			return res;
 		}

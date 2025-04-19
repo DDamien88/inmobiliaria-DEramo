@@ -19,9 +19,9 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"INSERT INTO propietarios 
-					(Nombre, Apellido, Dni, Telefono, Email, Clave) 
-					VALUES (@nombre, @apellido, @dni, @telefono, @email, @clave);
-					SELECT LAST_INSERT_ID();";//devuelve el id insertado (SCOPE_IDENTITY para sql)
+					(Nombre, Apellido, Dni, Telefono, Email, Clave, Activo) 
+					VALUES (@nombre, @apellido, @dni, @telefono, @email, @clave, 1);
+					SELECT LAST_INSERT_ID();";
 				using (var command = new MySqlCommand(sql, connection))
 				{
 					command.CommandType = CommandType.Text;
@@ -31,6 +31,7 @@ namespace inmobiliariaDEramo.Models
 					command.Parameters.AddWithValue("@telefono", p.Telefono);
 					command.Parameters.AddWithValue("@email", p.Email);
 					command.Parameters.AddWithValue("@clave", p.Clave);
+					command.Parameters.AddWithValue("@activo", p.Activo);
 					connection.Open();
 					res = Convert.ToInt32(command.ExecuteScalar());
 					p.IdPropietario = res;
@@ -44,7 +45,7 @@ namespace inmobiliariaDEramo.Models
 			int res = -1;
 			using (var connection = new MySqlConnection(connectionString))
 			{
-				string sql = @$"DELETE FROM Propietarios WHERE {nameof(Propietario.IdPropietario)} = @id";
+				string sql = @$"Update propietarios SET Activo=0 WHERE {nameof(Propietario.IdPropietario)} = @id";
 				using (var command = new MySqlCommand(sql, connection))
 				{
 					command.CommandType = CommandType.Text;
@@ -88,7 +89,7 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"SELECT 
-					IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave
+					IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave, Activo
 					FROM propietarios";
 				using (var command = new MySqlCommand(sql, connection))
 				{
@@ -106,6 +107,7 @@ namespace inmobiliariaDEramo.Models
 							Telefono = reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
 							Clave = reader.GetString("Clave"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 						res.Add(p);
 					}
@@ -115,14 +117,16 @@ namespace inmobiliariaDEramo.Models
 			return res;
 		}
 
+
+
 		public IList<Propietario> ObtenerLista(int paginaNro = 1, int tamPagina = 10)
 		{
 			IList<Propietario> res = new List<Propietario>();
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @$"
-					SELECT IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave
-					FROM Propietarios
+					SELECT IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave, Activo
+					FROM propietarios
 					LIMIT {tamPagina} OFFSET {(paginaNro - 1) * tamPagina}
 				";
 				using (var command = new MySqlCommand(sql, connection))
@@ -134,13 +138,14 @@ namespace inmobiliariaDEramo.Models
 					{
 						Propietario p = new Propietario
 						{
-							IdPropietario = reader.GetInt32(nameof(Propietario.IdPropietario)),//más seguro
+							IdPropietario = reader.GetInt32(nameof(Propietario.IdPropietario)),
 							Nombre = reader.GetString("Nombre"),
 							Apellido = reader.GetString("Apellido"),
 							Dni = reader.GetString("Dni"),
 							Telefono = reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
 							Clave = reader.GetString("Clave"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 						res.Add(p);
 					}
@@ -156,7 +161,7 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"SELECT 
-					IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave 
+					IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave, Activo
 					FROM propietarios
 					WHERE IdPropietario=@id";
 				using (var command = new MySqlCommand(sql, connection))
@@ -176,6 +181,7 @@ namespace inmobiliariaDEramo.Models
 							Telefono = reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
 							Clave = reader.GetString("Clave"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 					}
 					connection.Close();
@@ -254,5 +260,26 @@ namespace inmobiliariaDEramo.Models
 			}
 			return res;
 		}
-	}
+
+		public IList<Propietario> Activar(int idPropietario)
+		{
+			IList<Propietario> res = new List<Propietario>();
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				string sql = @"UPDATE propietarios SET Activo=1 WHERE IdPropietario=@idPropietario";
+				using (var command = new MySqlCommand(sql, connection))
+				{
+					command.Parameters.Add("@idPropietario", DbType.Int32).Value = idPropietario;
+					command.CommandType = CommandType.Text;
+					connection.Open();
+					var reader = command.ExecuteReader();
+					connection.Close();
+				}
+			}
+			return res;
+		}
+
+		
+    }
+
 }

@@ -1,3 +1,11 @@
+@if (TempData["Error"] != null)
+{
+	<div class="alert alert-danger alert-dismissible fade show" role="alert">
+		@TempData["Error"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+
+}
 @model IEnumerable<inmobiliariaDEramo.Models.Contrato>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -5,12 +13,54 @@
 	ViewData["Title"] = "Contratos";
 }
 
+
 <h1>Contratos</h1>
 <!-- <pre>@Json.Serialize(Model)</pre>  -->
+
+<form method="get" class="row g-3 mb-4">
+	<div class="col-md-3">
+		<label for="desde">Fecha desde</label>
+		<input type="date" name="desde" class="form-control" value="@ViewBag.FiltroDesde" />
+	</div>
+	<div class="col-md-3">
+		<label for="hasta">Fecha hasta</label>
+		<input type="date" name="hasta" class="form-control" value="@ViewBag.FiltroHasta" />
+	</div>
+	<div class="col-md-4">
+		<label for="idInmueble">Filtrar por Inmueble</label>
+		<select id="inmuebleSelect" name="idInmueble" class="form-select" style="width:100%"></select>
+	</div>
+
+	<div class="col-md-3">
+		<label class="form-label">Contratos que terminan en:</label>
+		<select class="form-select" name="plazoDias">
+			<option value="">-- Todos --</option>
+			<option value="30" selected="@(ViewBag.PlazoSeleccionado == "30")">30 días</option>
+			<option value="60" selected="@(ViewBag.PlazoSeleccionado == "60")">60 días</option>
+			<option value="90" selected="@(ViewBag.PlazoSeleccionado == "90")">90 días</option>
+		</select>
+	</div>
+
+
+	<div class="col-md-2 d-flex align-items-end">
+		<button type="submit" class="btn btn-primary me-2">Filtrar</button>
+		<a asp-action="Index" class="btn btn-secondary">Limpiar</a>
+	</div>
+</form>
+
+
 
 <p>
 	<a asp-action="Create" class="btn btn-primary">Crear nuevo</a>
 </p>
+
+@if (!Model.Any())
+{
+	<div class="alert alert-info">No se encontraron contratos con los filtros aplicados.</div>
+	<div class="alert alert-warn">No se encontraron contratos</div>
+}
+
+
 
 <table class="table table-striped">
 	<thead>
@@ -21,6 +71,7 @@
 			<th>@Html.DisplayNameFor(model => model.MontoMensual)</th>
 			<th>@Html.DisplayNameFor(model => model.FechaDesde)</th>
 			<th>@Html.DisplayNameFor(model => model.FechaHasta)</th>
+			<th>Activo</th>
 			<th>Acciones</th>
 		</tr>
 	</thead>
@@ -49,6 +100,17 @@
 				<td>@item.FechaDesde</td>
 				<td>@item.FechaHasta</td>
 				<td>
+					@if (item.Activo)
+					{
+						<span class="badge bg-success">Activo</span>
+					}
+					else
+					{
+						<span class="badge bg-danger">Inactivo</span>
+					}
+				</td>
+
+				<td>
 					<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm" title="Editar">
 						<i class="fa-solid fa-pen"></i>
 					</a>
@@ -56,12 +118,85 @@
 						onclick="return confirm('¿Seguro que deseas eliminar este contrato?');">
 						<i class="fa-solid fa-trash-can"></i>
 					</a>
-					<a asp-action="Pagar" asp-route-id="@item.Id" class="btn btn-success btn-sm" title="Pagar"
-						onclick="return confirm('¿Seguro que deseas realizar el pago?');">
-						<i class="fa-solid bi bi-cash-coin"></i>
+					<a asp-action="Activar" asp-route-id="@item.Id" title="Activar"><span
+							class="lnr lnr-cross"></span>Activar</a>
+					<a asp-controller="Pagos" asp-action="Index" asp-route-contratoId="@item.Id"
+						class="btn btn-success btn-sm">
+						Ver Pagos
 					</a>
+					<a asp-action="Finalizar" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm"
+						title="Finalizar anticipadamente">
+						<i class="fa-solid fa-calendar-xmark"></i> Finalizar
+					</a>
+
+					<a asp-action="Estado" asp-route-id="@item.Id" class="btn btn-info btn-sm">Ver Estado</a>
+					<a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Detalles</a>
+
+					@if (item.PuedeRenovarse)
+					{
+						<a asp-action="Renovar" asp-route-id="@item.Id" class="btn btn-info btn-sm">
+							<i class="fas fa-sync-alt"></i> Renovar
+						</a>
+					}
+
+
 				</td>
 			</tr>
 		}
+
+		<nav aria-label="Paginación"></nav>
+		<ul class="pagination justify-content-center">
+			@for (int i = 1; i <= (int)ViewBag.TotalPaginas; i++)
+			{
+				<li class="page-item @(i == (int)ViewBag.PaginaActual ? "active" : "")">
+					<a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-estado="@ViewBag.FiltroVigentes"
+						asp-route-estado="@ViewBag.InmuebleSeleccionado" asp-route-estado="@ViewBag.InmuebleNombre">
+						@i
+					</a>
+				</li>
+			}
+		</ul>
+		</nav>
 	</tbody>
 </table>
+
+@section Scripts {
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+
+	<script>
+		$(document).ready(function () {
+			let inmuebleSeleccionado = "@ViewBag.InmuebleSeleccionado";
+			let inmuebleTexto = "@ViewBag.InmuebleNombre";
+
+			$('#inmuebleSelect').select2({
+				theme: 'bootstrap-5',
+				placeholder: "Buscar inmueble por dirección...",
+				ajax: {
+					delay: 250,
+					dataType: 'json',
+					cache: true,
+					url: function (params) {
+						let q = params.term ? encodeURIComponent(params.term) : "";
+						return `/Inmuebles/Buscar/${q}`;
+					},
+					processResults: function (res) {
+						return {
+							results: res.datos.map(i => ({
+								id: i.idInmueble,
+								text: `${i.direccion} - ${i.uso} - ${i.tipo}`
+							}))
+						};
+					}
+				}
+			});
+
+
+			if (inmuebleSeleccionado && inmuebleTexto) {
+				var option = new Option(inmuebleTexto, inmuebleSeleccionado, true, true);
+				$('#inmuebleSelect').append(option).trigger('change');
+			}
+		});
+	</script>
+
+}

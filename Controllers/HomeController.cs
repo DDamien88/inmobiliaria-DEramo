@@ -30,18 +30,24 @@ namespace inmobiliariaDEramo.Controllers
 
         public IActionResult Index()
         {
+            Console.WriteLine($"Usuario logueado: {User.Identity?.Name}");
+            foreach (var c in User.Claims)
+            {
+                Console.WriteLine($"Claim: {c.Type} => {c.Value}");
+            }
+
             ViewBag.Titulo = "Página de Inicio";
             List<string> clientes = propietarios.ObtenerTodos().Select(x => x.Nombre + " " + x.Apellido).ToList();
             return View(clientes);
         }
 
-        // [Authorize]
-        // public ActionResult Seguro()
-        // {
-        //     var identity = (ClaimsIdentity)User.Identity;
-        //     IEnumerable<Claim>? claims = identity?.Claims;
-        //     return View(claims);
-        // }
+        [Authorize]
+        public ActionResult Seguro()
+        {
+            var identity = (ClaimsIdentity)User.Identity;
+            IEnumerable<Claim>? claims = identity?.Claims;
+            return View(claims);
+        }
 
         [Authorize(Policy = "Administrador")]
         public ActionResult Admin()
@@ -54,17 +60,17 @@ namespace inmobiliariaDEramo.Controllers
             return View();
         }
 
-        // [Authorize]
-        // public async Task<ActionResult> CambiarClaim()
-        // {
-        //     var identity = (ClaimsIdentity)User.Identity;
-        //     identity.RemoveClaim(identity.FindFirst("FullName"));
-        //     identity.AddClaim(new Claim("FullName", "Cosme Fulanito"));
-        //     await HttpContext.SignInAsync(
-        //         CookieAuthenticationDefaults.AuthenticationScheme,
-        //         new ClaimsPrincipal(identity));
-        //     return Redirect(nameof(Seguro));
-        // }
+        [Authorize]
+        public async Task<ActionResult> CambiarClaim()
+        {
+            var identity = (ClaimsIdentity)User.Identity;
+            identity.RemoveClaim(identity.FindFirst("FullName"));
+            identity.AddClaim(new Claim("FullName", "Cosme Fulanito"));
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity));
+            return Redirect(nameof(Seguro));
+        }
 
         public IActionResult Fecha(int anio, int mes, int dia)
         {
@@ -101,14 +107,14 @@ namespace inmobiliariaDEramo.Controllers
             return View();
         }
 
-        // public IActionResult Chat()
-        // {
-        //     return View();
-        // }
+        public IActionResult Chat()
+        {
+            return View();
+        }
 
-        // public IActionResult ChatSeguro()
-        // {
-        //     return View();
-        // }
+        public IActionResult ChatSeguro()
+        {
+            return View();
+        }
     }
 }

@@ -22,6 +22,8 @@ namespace inmobiliariaDEramo.Models
         [Required(ErrorMessage = "La clave es obligatoria"), DataType(DataType.Password)]
         public string Clave { get; set; } = string.Empty;
 
+        public Boolean Activo { get; set; }
+
         public override string ToString()
         {
             //return $"{Apellido}, {Nombre}";

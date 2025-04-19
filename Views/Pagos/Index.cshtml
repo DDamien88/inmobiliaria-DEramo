@@ -1,0 +1,57 @@
+@model IEnumerable<inmobiliariaDEramo.Models.Pago>
+@{
+    ViewData["Title"] = "Pagos del Contrato";
+    var contratoId = ViewBag.ContratoId;
+}
+
+<h1>Pagos del Contrato #@contratoId</h1>
+
+<p>
+    <a asp-action="Create" asp-route-contratoId="@contratoId" class="btn btn-primary">Registrar nuevo pago</a>
+    <a asp-controller="Contratos" asp-action="Index" class="btn btn-secondary">Volver a Contratos</a>
+</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Fecha de Pago</th>
+            <th>Importe</th>
+            <th>Detalle</th>
+            <th>Fecha culminación del Contrato</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var pago in Model)
+        {
+            <tr>
+                <td>@pago.NumeroPago</td>
+                <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
+                <td>@pago.Importe.ToString("C")</td>
+                <td>@pago.Detalle</td>
+                <td>@pago.Contrato.FechaHasta</td>
+                <td>
+                    @if (!pago.Anulado)
+                    {
+                        <span class="text-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="text-danger">Dado de baja</span>
+                    }
+                </td>
+                <td>
+                    <a asp-controller="Pagos" asp-action="Editar" asp-route-id="@pago.Id"
+                        class="btn btn-warning btn-sm">Editar</a>
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@pago.Id" class="btn btn-info btn-sm">Detalles</a>
+                </td>
+            </tr>
+
+        }
+
+    </tbody>
+</table>

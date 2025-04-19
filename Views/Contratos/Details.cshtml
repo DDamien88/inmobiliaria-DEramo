@@ -1,0 +1,100 @@
+@model inmobiliariaDEramo.Models.Contrato
+
+@{
+    ViewData["Title"] = "Detalles del Contrato";
+    var esAdmin = User.IsInRole("Administrador");
+}
+
+<h2>Detalles del Contrato #@Model.Id</h2>
+<hr />
+
+<table class="table table-bordered">
+    <tr>
+        <th>Inquilino</th>
+        <td>@Model.Inquilino?.Nombre @Model.Inquilino?.Apellido (@Model.Inquilino?.Dni)</td>
+    </tr>
+    <tr>
+        <th>Inmueble</th>
+        <td>@Model.Inmueble?.Direccion - @Model.Inmueble?.Tipo (@Model.Inmueble?.Uso)</td>
+    </tr>
+    <tr>
+        <th>Fecha Desde</th>
+        <td>@Model.FechaDesde?.ToString("dd/MM/yyyy")</td>
+    </tr>
+    <tr>
+        <th>Fecha Hasta</th>
+        <td>@Model.FechaHasta?.ToString("dd/MM/yyyy")</td>
+    </tr>
+    <tr>
+        <th>Monto Mensual</th>
+        <td>@Model.MontoMensual.ToString("C")</td>
+    </tr>
+    <tr>
+        <th>Activo</th>
+        <td>
+            @if (Model.Activo)
+            {
+                <span class="text-success">Sí</span>
+            }
+            else
+            {
+                <span class="text-danger">No</span>
+            }
+        </td>
+    </tr>
+    <tr>
+        <th>Fecha Terminación Anticipada</th>
+        <td>
+            @if (Model.FechaTerminacionAnticipada.HasValue)
+            {
+                <span class="text-danger">@Model.FechaTerminacionAnticipada?.ToString("dd/MM/yyyy")</span>
+            }
+            else
+            {
+                <em>No finalizado anticipadamente</em>
+            }
+        </td>
+    </tr>
+    <tr>
+        <th>Multa</th>
+        <td>
+            @if (Model.MontoMulta.HasValue)
+            {
+                <span>@Model.MontoMulta?.ToString("C")</span>
+            }
+            else
+            {
+                <em>No aplica</em>
+            }
+        </td>
+    </tr>
+    <tr>
+        <th>Multa Pagada</th>
+        <td>
+            @(Model.MultaPagada ? "Sí" : "No")
+        </td>
+    </tr>
+
+    @if (esAdmin)
+    {
+        <tr>
+            <th>Creado por</th>
+            <td>@Model.UsuarioAlta?.Nombre @Model.UsuarioAlta?.Apellido (@Model.UsuarioAlta?.Email)</td>
+        </tr>
+        <tr>
+            <th>Finalizado por</th>
+            <td>
+                @if (Model.UsuarioBaja != null)
+                {
+                    <text>@Model.UsuarioBaja?.Nombre @Model.UsuarioBaja?.Apellido (@Model.UsuarioBaja?.Email)</text>
+                }
+                else
+                {
+                    <em>No aplica</em>
+                }
+            </td>
+        </tr>
+    }
+</table>
+
+<a asp-action="Index" class="btn btn-secondary">Volver</a>

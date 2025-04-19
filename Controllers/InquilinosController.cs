@@ -9,9 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authorization;
 
 namespace inmobiliariaDEramo.Controllers
 {
+	[Authorize]
 	public class InquilinosController : Controller
 	{
 		// Sin inyección de dependencias (crear dentro del ctor)
@@ -38,8 +40,8 @@ namespace inmobiliariaDEramo.Controllers
 		{
 			try
 			{
-				//var lista = repositorio.ObtenerTodos();
-				var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), 5);
+				var lista = repositorio.ObtenerTodos();
+				// var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), 5);
 				ViewBag.Id = TempData["Id"];
 				// TempData es para pasar datos entre acciones
 				// ViewBag/Data es para pasar datos del controlador a la vista
@@ -308,6 +310,22 @@ namespace inmobiliariaDEramo.Controllers
 			{
 				//poner breakpoints para detectar errores
 				ModelState.AddModelError("", "Ocurrio un error al eliminar el Inquilino.");
+				throw;
+			}
+		}
+
+		public ActionResult Activar(int id)
+		{
+			try
+			{
+				repositorio.Activar(idInquilino: id);
+				TempData["Mensaje"] = "Activación realizada correctamente";
+				return RedirectToAction(nameof(Index));
+			}
+			catch (Exception ex)
+			{
+				//poner breakpoints para detectar errores
+				ModelState.AddModelError("", "Ocurrio un error al activar el propietario.");
 				throw;
 			}
 		}

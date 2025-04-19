@@ -21,17 +21,12 @@ namespace inmobiliariaDEramo.Models
         public string Telefono { get; set; }
         public string Email { get; set; }
 
+        public Boolean Activo { get; set; }
+
 
         public override string ToString()
         {
-            //return $"{Apellido}, {Nombre}";
-            //return $"{Nombre} {Apellido}";
-            var res = $"{Nombre} {Apellido}";
-            if (!String.IsNullOrEmpty(Dni))
-            {
-                res += $" ({Dni})";
-            }
-            return res;
+            return $"{Apellido} {Nombre} - {Dni}";
         }
     }
 }

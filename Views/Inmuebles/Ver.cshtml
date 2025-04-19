@@ -26,32 +26,32 @@ else
 			</div>
 			<div class="form-group">
 				<label asp-for="Direccion" class="control-label"></label>
-				<input asp-for="Direccion" class="form-control" />
+				<input type="text" asp-for="Direccion" class="form-control" required />
 				<span asp-validation-for="Direccion" class="text-danger"></span>
 			</div>
 			<div class="form-group">
 				<label asp-for="Uso" class="control-label"></label>
-				<input asp-for="Uso" class="form-control" />
+				<input type="text" asp-for="Uso" class="form-control" required />
 				<span asp-validation-for="Uso" class="text-danger"></span>
 			</div>
 			<div class="form-group">
 				<label asp-for="Tipo" class="control-label"></label>
-				<input asp-for="Tipo" class="form-control" />
+				<input type="text" asp-for="Tipo" class="form-control" required />
 				<span asp-validation-for="Tipo" class="text-danger"></span>
 			</div>
 			<div class="form-group">
 				<label asp-for="Precio" class="control-label"></label>
-				<input asp-for="Precio" class="form-control" />
+				<input asp-for="Precio" class="form-control" required />
 				<span asp-validation-for="Precio" class="text-danger"></span>
 			</div>
 			<div class="form-group">
 				<label asp-for="Ambientes" class="control-label"></label>
-				<input asp-for="Ambientes" class="form-control" />
+				<input asp-for="Ambientes" class="form-control" required />
 				<span asp-validation-for="Ambientes" class="text-danger"></span>
 			</div>
 			<div class="form-group">
 				<label asp-for="Superficie" class="control-label"></label>
-				<input asp-for="Superficie" class="form-control" />
+				<input asp-for="Superficie" class="form-control" required />
 				<span asp-validation-for="Superficie" class="text-danger"></span>
 			</div>
 			<div class="form-group">
@@ -66,10 +66,11 @@ else
 			</div>
 			<div class="form-group">
 				<label class="control-label">Propietario</label>
-				<select id="Propietario" class="form-control" name="PropietarioId"></select>
+				<select id="Propietario" class="form-control" name="PropietarioId" required></select>
 				@if (Id > 0)
 				{
-					<option value="@Model?.PropietarioId" selected>@Model?.Duenio?.Nombre @Model?.Duenio?.Apellido @Model?.Duenio?.Dni</option>
+					<option value="@Model?.PropietarioId" selected>@Model?.Duenio?.Nombre @Model?.Duenio?.Apellido
+						@Model?.Duenio?.Dni</option>
 				}
 			</div>
 
@@ -85,8 +86,11 @@ else
 </div>
 
 @section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
 	<script type="text/javascript">
-		$(document).ready(function() {
+		$(document).ready(function () {
 			/*
 			$('#Propietario').on('input', function() {
 				let q = $(this).val();
@@ -98,7 +102,7 @@ else
 				}).fail(res => {
 					console.log("Error: ", res);
 				}).always(res => {
-					
+				
 				});
 			});
 
@@ -123,15 +127,15 @@ else
 						let q = params.term ? encodeURIComponent(params.term) : "";
 						return `/Propietarios/Buscar/${q}`;
 					},/*
-					data: function (params) {
-						var query = {
-							q: params.term,
-						}
-						return query;
-					},*/
+						data: function (params) {
+							var query = {
+								q: params.term,
+							}
+							return query;
+						},*/
 					processResults: function (res) {
 						return {
-							results: res.datos.map(p => ({id: p.idPropietario, text: `${p.nombre} ${p.apellido}`}))
+							results: res.datos.map(p => ({ id: p.idPropietario, text: `${p.nombre} ${p.apellido}` }))
 						};
 					}
 				}

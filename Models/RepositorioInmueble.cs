@@ -22,8 +22,8 @@ namespace inmobiliariaDEramo.Models
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = @"INSERT INTO inmuebles 
-					(Direccion, Uso, Tipo, Precio, Ambientes, Superficie, Latitud, Longitud, PropietarioId)
-					VALUES (@direccion, @uso, @tipo, @precio, @ambientes, @superficie, @latitud, @longitud, @propietarioId);
+					(Direccion, Uso, Tipo, Precio, Ambientes, Superficie, Latitud, Longitud, PropietarioId, Activo)
+					VALUES (@direccion, @uso, @tipo, @precio, @ambientes, @superficie, @latitud, @longitud, @propietarioId, 1);
 					SELECT LAST_INSERT_ID();";
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -37,6 +37,7 @@ namespace inmobiliariaDEramo.Models
                     command.Parameters.AddWithValue("@latitud", entidad.Latitud);
                     command.Parameters.AddWithValue("@longitud", entidad.Longitud);
                     command.Parameters.AddWithValue("@propietarioId", entidad.PropietarioId);
+                    command.Parameters.AddWithValue("@activo", entidad.Activo);
                     connection.Open();
                     res = Convert.ToInt32(command.ExecuteScalar());
                     entidad.Id = res;
@@ -45,12 +46,14 @@ namespace inmobiliariaDEramo.Models
             }
             return res;
         }
+
+
         public int Baja(int id)
         {
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {
-                string sql = @$"DELETE FROM inmuebles WHERE Id = @id";
+                string sql = @$"Update inmuebles SET Activo=0 WHERE {nameof(Inmueble.Id)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
@@ -62,6 +65,8 @@ namespace inmobiliariaDEramo.Models
             }
             return res;
         }
+
+
         public int Modificacion(Inmueble entidad)
         {
             int res = -1;
@@ -96,9 +101,11 @@ namespace inmobiliariaDEramo.Models
             IList<Inmueble> res = new List<Inmueble>();
             using (var connection = new MySqlConnection(connectionString))
             {
-                string sql = @"SELECT Id, Direccion, Uso, Tipo, Precio, Ambientes, Superficie, Latitud, Longitud, PropietarioId,
-					p.Nombre, p.Apellido, p.Dni
-					FROM inmuebles i INNER JOIN propietarios p ON i.PropietarioId = p.IdPropietario";
+                string sql = @"SELECT i.Id, i.Direccion, i.Uso, i.Tipo, i.Precio, i.Ambientes, i.Superficie, i.Latitud, i.Longitud, i.PropietarioId,i.Portada, i.Activo, 
+                    p.IdPropietario, p.Nombre, p.Apellido, p.Dni
+                FROM inmuebles i 
+                INNER JOIN propietarios p ON i.PropietarioId = p.IdPropietario
+                    ";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
@@ -118,11 +125,13 @@ namespace inmobiliariaDEramo.Models
                             Latitud = reader.GetDecimal(7),
                             Longitud = reader.GetDecimal(8),
                             PropietarioId = reader.GetInt32(9),
+                            Portada = reader["Portada"] == DBNull.Value ? "" : reader.GetString("Portada"),
+                            Activo = reader.GetBoolean(11),
                             Duenio = new Propietario
                             {
-                                IdPropietario = reader.GetInt32(9),
-                                Nombre = reader.GetString(10),
-                                Apellido = reader.GetString(11),
+                                IdPropietario = reader.GetInt32(12),
+                                Nombre = reader.GetString(13),
+                                Apellido = reader.GetString(14),
                             }
                         };
 
@@ -134,13 +143,15 @@ namespace inmobiliariaDEramo.Models
             return res;
         }
 
+
+
         public Inmueble ObtenerPorId(int id)
         {
             Inmueble entidad = null;
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = @$"
-					SELECT {nameof(Inmueble.Id)}, Direccion, Uso, Tipo, Precio, Ambientes, Superficie, Latitud, Longitud, PropietarioId, p.Nombre, p.Apellido
+					SELECT {nameof(Inmueble.Id)}, i.Direccion, i.Uso, i.Tipo, i.Precio, i.Ambientes, i.Superficie, i.Latitud, i.Longitud, i.PropietarioId,  i.Activo, p.IdPropietario, i.Portada, p.Nombre, p.Apellido
 					FROM inmuebles i JOIN propietarios p ON i.PropietarioId = p.IdPropietario
 					WHERE {nameof(Inmueble.Id)}=@id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -163,6 +174,8 @@ namespace inmobiliariaDEramo.Models
                             Latitud = reader.GetDecimal("Latitud"),
                             Longitud = reader.GetDecimal("Longitud"),
                             PropietarioId = reader.GetInt32("PropietarioId"),
+                            Portada = reader["Portada"] == DBNull.Value ? "" : reader.GetString("Portada"),
+                            Activo = reader.GetBoolean("Activo"),
                             Duenio = new Propietario
                             {
                                 IdPropietario = reader.GetInt32("PropietarioId"),
@@ -177,6 +190,8 @@ namespace inmobiliariaDEramo.Models
             return entidad;
         }
 
+        
+
         public IList<Inmueble> BuscarPorPropietario(int idPropietario)
         {
             List<Inmueble> res = new List<Inmueble>();
@@ -184,7 +199,7 @@ namespace inmobiliariaDEramo.Models
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = @$"
-					SELECT {nameof(Inmueble.Id)}, Direccion, Uso, Tipo, Precio, Ambientes, Superficie, Latitud, Longitud, PropietarioId, p.Nombre, p.Apellido
+					SELECT {nameof(Inmueble.Id)}, Direccion, Uso, Tipo, Precio, Ambientes, Superficie, Latitud, Longitud, PropietarioId, Activo, p.Nombre, p.Apellido
 					FROM inmuebles i JOIN propietarios p ON i.PropietarioId = p.IdPropietario
 					WHERE PropietarioId=@idPropietario";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -207,6 +222,7 @@ namespace inmobiliariaDEramo.Models
                             Latitud = reader.GetDecimal("Latitud"),
                             Longitud = reader.GetDecimal("Longitud"),
                             PropietarioId = reader.GetInt32("PropietarioId"),
+                            Activo = reader.GetBoolean("Activo"),
                             Duenio = new Propietario
                             {
                                 IdPropietario = reader.GetInt32("PropietarioId"),
@@ -267,5 +283,45 @@ namespace inmobiliariaDEramo.Models
 
             return lista;
         }
+
+        public IList<Inmueble> Activar(int id)
+        {
+            IList<Inmueble> res = new List<Inmueble>();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = $"UPDATE inmuebles SET Activo = 1 WHERE Id = {id}";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.CommandType = CommandType.Text;
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public int ModificarPortada(int id, string url)
+        {
+            int res = -1;
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"
+					UPDATE Inmuebles SET
+					Portada=@portada
+					WHERE Id = @id";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@portada", String.IsNullOrEmpty(url) ? DBNull.Value : url);
+                    command.Parameters.AddWithValue("@id", id);
+                    command.CommandType = CommandType.Text;
+                    connection.Open();
+                    res = command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
     }
 }

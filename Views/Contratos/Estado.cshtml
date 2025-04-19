@@ -1,0 +1,77 @@
+@model inmobiliariaDEramo.Models.Contrato
+
+@{
+    ViewData["Title"] = "Estado del Contrato";
+    var mesesAdeudados = ViewBag.MesesAdeudados as int? ?? 0;
+    var totalPagos = ViewBag.TotalPagos as int? ?? 0;
+}
+
+<h2>Estado del Contrato N.º @Model.Id</h2>
+
+<table class="table table-bordered mt-4">
+    <tr>
+        <th>Inquilino</th>
+        <td>@Model.Inquilino?.Nombre @Model.Inquilino?.Apellido</td>
+    </tr>
+    <tr>
+        <th>Inmueble</th>
+        <td>@Model.Inmueble?.Direccion</td>
+    </tr>
+    <tr>
+        <th>Fecha de Inicio</th>
+        <td>@Model.FechaDesde?.ToString("dd/MM/yyyy")</td>
+    </tr>
+    <tr>
+        <th>Fecha de Finalización Original</th>
+        <td>@Model.FechaHasta?.ToString("dd/MM/yyyy")</td>
+    </tr>
+    <tr>
+        <th>Fecha de Finalización Anticipada</th>
+        <td>
+            @if (Model.FechaTerminacionAnticipada.HasValue)
+            {
+                <span class="text-danger">@Model.FechaTerminacionAnticipada?.ToString("dd/MM/yyyy")</span>
+            }
+            else
+            {
+                <em>No finalizado anticipadamente</em>
+            }
+        </td>
+    </tr>
+    <tr>
+        <th>Multa</th>
+        <td>
+            @if (Model.MontoMulta.HasValue)
+            {
+                <span>@Model.MontoMulta?.ToString("C")</span>
+            }
+            else
+            {
+                <em>No aplica</em>
+            }
+        </td>
+    </tr>
+    <tr>
+        <th>Multa Pagada</th>
+        <td>
+            @if (Model.MultaPagada)
+            {
+                <span class="text-success">Sí</span>
+            }
+            else
+            {
+                <span class="text-warning">Pendiente</span>
+            }
+        </td>
+    </tr>
+    <tr>
+        <th>Meses Adeudados</th>
+        <td>@mesesAdeudados</td>
+    </tr>
+    <tr>
+        <th>Pagos Registrados</th>
+        <td>@totalPagos</td>
+    </tr>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary">Volver a Contratos</a>
