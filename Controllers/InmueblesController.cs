@@ -31,9 +31,14 @@ namespace inmobiliariaDEramo.Controllers
             {
                 var contratos = repoContratos.ObtenerTodos();
 
+                if (fechaHasta.Value < fechaDesde.Value)
+                {
+                    TempData["Error"] = "La fecha de finalización no puede ser menor a la fecha desde.";
+                }
+
                 var ocupados = contratos
                     .Where(c =>
-                        c.FechaDesde <= fechaHasta && c.FechaHasta >= fechaDesde)
+                        c.FechaDesde <= fechaHasta && c.FechaHasta >= fechaDesde && estado == 0)
                     .Select(c => c.IdInmueble)
                     .Distinct();
 
@@ -352,6 +357,7 @@ namespace inmobiliariaDEramo.Controllers
         }
 
         // GET: Inmueble/Eliminar/5
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id)
         {
             var entidad = repositorio.ObtenerPorId(id);
@@ -365,6 +371,7 @@ namespace inmobiliariaDEramo.Controllers
         // POST: Inmueble/Eliminar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id, Inmueble entidad)
         {
             try
@@ -380,6 +387,8 @@ namespace inmobiliariaDEramo.Controllers
                 return View(entidad);
             }
         }
+
+        
 
         public ActionResult Activar(int id)
         {

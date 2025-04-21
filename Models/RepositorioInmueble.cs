@@ -190,7 +190,28 @@ namespace inmobiliariaDEramo.Models
             return entidad;
         }
 
-        
+        public int obtenerIdPropietario(int idInmueble)
+        {
+            int res = 0;
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = $"SELECT PropietarioId FROM inmuebles WHERE Id={idInmueble}";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.CommandType = CommandType.Text;
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res = reader.GetInt32(0);
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+
 
         public IList<Inmueble> BuscarPorPropietario(int idPropietario)
         {

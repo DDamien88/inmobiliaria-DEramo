@@ -48,7 +48,7 @@ namespace InmobiliariaDEramo.Models
 			int res = -1;
 			using (MySqlConnection connection = new MySqlConnection(connectionString))
 			{
-				string sql = "DELETE FROM usuarios WHERE Id = @id";
+				string sql = "UPDATE usuarios SET Activo = 0 WHERE Id = @id";
 				using (MySqlCommand command = new MySqlCommand(sql, connection))
 				{
 					command.CommandType = CommandType.Text;
@@ -60,6 +60,10 @@ namespace InmobiliariaDEramo.Models
 			}
 			return res;
 		}
+
+
+
+
 		public int Modificacion(Usuario e)
 		{
 			int res = -1;
@@ -92,7 +96,7 @@ namespace InmobiliariaDEramo.Models
 			using (MySqlConnection connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"
-					SELECT Id, Nombre, Apellido, Avatar, Email, Clave, Rol
+					SELECT Id, Nombre, Apellido, Avatar, Email, Clave, Rol, Activo
 					FROM usuarios";
 				using (MySqlCommand command = new MySqlCommand(sql, connection))
 				{
@@ -110,6 +114,7 @@ namespace InmobiliariaDEramo.Models
 							Email = reader.GetString("Email"),
 							Clave = reader.GetString("Clave"),
 							Rol = reader.GetInt32("Rol"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 						res.Add(e);
 					}
@@ -217,6 +222,21 @@ namespace InmobiliariaDEramo.Models
 			return res;
 		}
 
-
-	}
+        public int Activar(int id)
+        {
+			int res = -1;
+			using (MySqlConnection connection = new MySqlConnection(connectionString))
+			{
+				string sql = $"UPDATE usuarios SET Activo = 1 WHERE Id = {id}";
+				using (MySqlCommand command = new MySqlCommand(sql, connection))
+				{
+					command.CommandType = CommandType.Text;
+					connection.Open();
+					res = command.ExecuteNonQuery();
+					connection.Close();
+				}
+			}
+			return res;
+        }
+    }
 }

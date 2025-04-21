@@ -46,10 +46,20 @@ namespace inmobiliariaDEramo.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @$"Update propietarios SET Activo=0 WHERE {nameof(Propietario.IdPropietario)} = @id";
-				using (var command = new MySqlCommand(sql, connection))
+				string sql2 = @$"Update inmuebles SET Activo=0 WHERE PropietarioId = @id";
+				using (MySqlCommand command = new MySqlCommand(sql, connection))
 				{
-					command.CommandType = CommandType.Text;
 					command.Parameters.AddWithValue("@id", id);
+					command.CommandType = CommandType.Text;
+					connection.Open();
+					res = command.ExecuteNonQuery();
+					connection.Close();
+
+				}
+				using (MySqlCommand command = new MySqlCommand(sql2, connection))
+				{
+					command.Parameters.AddWithValue("@id", id);
+					command.CommandType = CommandType.Text;
 					connection.Open();
 					res = command.ExecuteNonQuery();
 					connection.Close();
@@ -57,6 +67,9 @@ namespace inmobiliariaDEramo.Models
 			}
 			return res;
 		}
+
+
+
 		public int Modificacion(Propietario p)
 		{
 			int res = -1;
@@ -155,7 +168,7 @@ namespace inmobiliariaDEramo.Models
 			return res;
 		}
 
-		virtual public Propietario ObtenerPorId(int id)
+		public Propietario ObtenerPorId(int id)
 		{
 			Propietario? p = null;
 			using (var connection = new MySqlConnection(connectionString))
@@ -279,7 +292,7 @@ namespace inmobiliariaDEramo.Models
 			return res;
 		}
 
-		
-    }
+
+	}
 
 }

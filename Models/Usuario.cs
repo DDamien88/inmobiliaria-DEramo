@@ -35,6 +35,8 @@ namespace InmobiliariaDEramo.Models
         [NotMapped]//Para EF
         public string RolNombre => Rol > 0 ? ((enRoles)Rol).ToString() : "";
 
+        public bool Activo { get; set; } = true;
+
         public static IDictionary<int, string> ObtenerRoles()
         {
             SortedDictionary<int, string> roles = new SortedDictionary<int, string>();

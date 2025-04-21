@@ -282,6 +282,8 @@ namespace inmobiliariaDEramo.Controllers
 		}*/
 
 		// GET: Inquilino/Delete/5
+		[HttpGet]
+		[Authorize(Policy = "Administrador")]
 		public ActionResult Eliminar(int id)
 		{
 			try
@@ -298,6 +300,7 @@ namespace inmobiliariaDEramo.Controllers
 		// POST: Inquilino/Delete/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
+		[Authorize(Policy = "Administrador")]
 		public ActionResult Eliminar(int id, Inquilino entidad)
 		{
 			try

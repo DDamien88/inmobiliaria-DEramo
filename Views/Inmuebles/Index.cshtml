@@ -2,6 +2,7 @@
 
 @{
 	ViewData["Title"] = "Inmuebles";
+	ViewData["Error"] = ViewBag.Error;
 	var rnd = new Random();
 	var estadoSeleccionado = ViewBag.EstadoSeleccionado?.ToString();
 	var propietarioSeleccionado = ViewBag.PropietarioSeleccionado as string ?? "";
@@ -9,13 +10,22 @@
 
 <h1>Inmuebles</h1>
 
+@if (TempData["Error"] != null)
+{
+	<div class="alert alert-warning alert-dismissible fade show" role="alert">
+		@TempData["Error"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+}
+
+
 <form method="get" class="row g-3 align-items-end mb-3">
 	<div class="col-md-3">
-		<label for="fechaDesde" class="form-label">Desde</label>
+		<label for="fechaDesde" class="form-label">Fecha contrato desde</label>
 		<input type="date" class="form-control" name="fechaDesde" value="@ViewBag.FechaDesde" />
 	</div>
 	<div class="col-md-3">
-		<label for="fechaHasta" class="form-label">Hasta</label>
+		<label for="fechaHasta" class="form-label">Fecha contrato hasta</label>
 		<input type="date" class="form-control" name="fechaHasta" value="@ViewBag.FechaHasta" />
 	</div>
 	<div class="col-md-3">
@@ -118,7 +128,7 @@
 					}
 					else
 					{
-						<span class="badge bg-danger">Inactivo</span>
+						<span class="badge bg-danger">Dado de baja</span>
 					}
 				</td>
 				<td>

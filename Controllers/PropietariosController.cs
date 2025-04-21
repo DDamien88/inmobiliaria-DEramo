@@ -17,7 +17,9 @@ namespace inmobiliariaDEramo.Controllers
 		private readonly IRepositorioPropietario repositorio;
 		private readonly IConfiguration config;
 
-		public PropietariosController(IRepositorioPropietario repo, IConfiguration config)
+		private readonly IRepositorioInmueble repositorioInmueble;
+
+		public PropietariosController(IRepositorioPropietario repo, IConfiguration config, IRepositorioInmueble repositorioInmueble)
 		{
 			// Sin inyección de dependencias y sin usar el config (quitar el parámetro repo del ctor)
 			//this.repositorio = new RepositorioPropietario();
@@ -26,6 +28,7 @@ namespace inmobiliariaDEramo.Controllers
 			// Con inyección de dependencias
 			this.repositorio = repo;
 			this.config = config;
+			this.repositorioInmueble = repositorioInmueble;
 		}
 
 		// GET: Propietario
@@ -273,38 +276,68 @@ namespace inmobiliariaDEramo.Controllers
 			}
 		}
 
+
+
 		// GET: Propietario/Delete/5
-		public ActionResult Eliminar(int id)
+		[HttpGet]
+		[Authorize(Policy = "Administrador")]
+		public ActionResult Eliminar(int id, Inmueble entidad)
 		{
 			try
 			{
-				var entidad = repositorio.ObtenerPorId(id);
-				return View(entidad);
+				entidad = repositorioInmueble.ObtenerPorId(id);
+
+				var propietario = repositorio.ObtenerPorId(id);
+				if (propietario == null)
+					return NotFound();
+
+				return View(propietario);
 			}
 			catch (Exception ex)
-			{//poner breakpoints para detectar errores
-				throw;
+			{
+				TempData["Error"] = "Error al buscar el propietario: " + ex.Message;
+				return RedirectToAction(nameof(Index));
 			}
 		}
+
+
+
 
 		// POST: Propietario/Delete/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public ActionResult Eliminar(int id, Propietario entidad)
+		[Authorize(Policy = "Administrador")]
+		public ActionResult Eliminar(int id, Propietario propietario)
 		{
 			try
 			{
+				// // Obtener todos los inmuebles asociados al propietario
+				// var inmuebles = repositorioInmueble.BuscarPorPropietario(id);
+
+				// foreach (var inmueble in inmuebles)
+				// {
+				// 	Console.WriteLine($"Dando de baja inmueble: {inmueble.Id} - {inmueble.Direccion}");
+				// 	repositorioInmueble.Baja(inmueble.Id);
+				// }
+
 				repositorio.Baja(id);
-				TempData["Mensaje"] = "Eliminación realizada correctamente";
+				TempData["Mensaje"] = "Propietario e inmuebles dados de baja correctamente.";
 				return RedirectToAction(nameof(Index));
 			}
 			catch (Exception ex)
 			{
-				//poner breakpoints para detectar errores
-				ModelState.AddModelError("", "Ocurrio un error al eliminar el propietario.");
-				throw;
+				ModelState.AddModelError("", "Ocurrió un error al eliminar el propietario.");
+				return View();
 			}
 		}
+
+
+
+
+
+
+
+
 
 		[HttpGet]
 		public JsonResult Buscar(string id)

@@ -149,7 +149,9 @@ namespace InmobiliariaDEramo.Controllers
                         return RedirectToAction(nameof(Index), "Home");
                 }
 
-                if (!string.IsNullOrEmpty(ClaveNueva))
+                var usuarioDb = repositorio.ObtenerPorId(id);
+
+                if (!string.IsNullOrEmpty(ClaveNueva) || !string.IsNullOrEmpty(ReClaveNueva))
                 {
                     if (ClaveNueva != ReClaveNueva)
                     {
@@ -166,8 +168,13 @@ namespace InmobiliariaDEramo.Controllers
                         numBytesRequested: 256 / 8));
                     u.Clave = hashed;
                 }
+                else
+                {
+                    // Si no cambia la clave, conservar la actual
+                    u.Clave = usuarioDb.Clave;
+                }
 
-                if (u.AvatarFile != null)
+                if (u.AvatarFile != null && u.AvatarFile.Length > 0)
                 {
                     string wwwPath = environment.WebRootPath;
                     string path = Path.Combine(wwwPath, "Uploads");
@@ -184,6 +191,17 @@ namespace InmobiliariaDEramo.Controllers
                     {
                         u.AvatarFile.CopyTo(stream);
                     }
+                }
+                else
+                {
+                    // Si no cambia el avatar, conservar el actual
+                    u.Avatar = usuarioDb.Avatar;
+                }
+
+                // Si no es admin, mantener su rol
+                if (!User.IsInRole("Administrador"))
+                {
+                    u.Rol = usuarioDb.Rol;
                 }
 
                 repositorio.Modificacion(u);
@@ -203,32 +221,56 @@ namespace InmobiliariaDEramo.Controllers
 
 
 
+
         // GET: Usuarios/Delete/5
         [Authorize(Policy = "Administrador")]
-        public ActionResult Delete(int id)
+        public ActionResult Eliminar(int id)
         {
-            return View();
+            var usuario = repositorio.ObtenerPorId(id);
+            if (usuario == null) return NotFound();
+            return View(usuario);
         }
 
         // POST: Usuarios/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "Administrador")]
-        public ActionResult Delete(int id, Usuario usuario)
+        public ActionResult Eliminar(int id, Usuario usuario)
         {
             try
             {
-                // TODO: Add delete logic here
-                var ruta = Path.Combine(environment.WebRootPath, "Uploads", $"avatar_{id}" + Path.GetExtension(usuario.Avatar));
-                if (System.IO.File.Exists(ruta))
-                    System.IO.File.Delete(ruta);
+
+                repositorio.Baja(id);
+                TempData["Mensaje"] = "Usuario dade de baja correctamente.";
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                TempData["Error"] = "Error al eliminar usuario: " + ex.Message;
+                return View(usuario);
             }
         }
+
+        [Authorize(Policy = "Administrador")]
+        public IActionResult Activar(int id)
+        {
+            try
+            {
+                repositorio.Activar(id);
+                TempData["Mensaje"] = "Activación realizada correctamente";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                //poner breakpoints para detectar errores
+                ModelState.AddModelError("", "Ocurrio un error al activar el propietario.");
+                throw;
+            }
+        }
+
+
+
+
 
         [Authorize]
         public IActionResult Avatar()
