@@ -1,0 +1,88 @@
+@model inmobiliariaDEramo.Models.Propietario
+
+@{
+    ViewData["Title"] = "Detalles del Propietario";
+    var inmuebles = ViewBag.Inmuebles as List<inmobiliariaDEramo.Models.Inmueble> ?? new();
+}
+
+<h2>Detalles del Propietario</h2>
+<hr />
+
+<div class="mb-3">
+    <dl class="row">
+        <dt class="col-sm-2">Nombre</dt>
+        <dd class="col-sm-10">@Model.Nombre</dd>
+
+        <dt class="col-sm-2">Apellido</dt>
+        <dd class="col-sm-10">@Model.Apellido</dd>
+
+        <dt class="col-sm-2">DNI</dt>
+        <dd class="col-sm-10">@Model.Dni</dd>
+
+        <dt class="col-sm-2">Teléfono</dt>
+        <dd class="col-sm-10">@Model.Telefono</dd>
+
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">Estado</dt>
+        <dd class="col-sm-10">
+            @if (Model.Activo)
+            {
+                <span class="badge bg-success">Activo</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">Inactivo</span>
+            }
+        </dd>
+    </dl>
+</div>
+
+<h4>Inmuebles de este propietario</h4>
+
+@if (inmuebles.Count == 0)
+{
+    <p class="text-muted">Este propietario no tiene inmuebles registrados.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Dirección</th>
+                <th>Uso</th>
+                <th>Tipo</th>
+                <th>Precio</th>
+                <th>Ambientes</th>
+                <th>Superficie</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var inmueble in inmuebles)
+            {
+                <tr>
+                    <td>@inmueble.Direccion</td>
+                    <td>@inmueble.Uso</td>
+                    <td>@inmueble.Tipo</td>
+                    <td>@($"{inmueble.Precio:C}")</td>
+                    <td>@inmueble.Ambientes</td>
+                    <td>@inmueble.Superficie</td>
+                    <td>
+                        @if (inmueble.Activo)
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactivo</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-action="Index" class="btn btn-secondary">Volver al listado</a>

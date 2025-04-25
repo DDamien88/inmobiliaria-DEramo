@@ -220,7 +220,7 @@ namespace inmobiliariaDEramo.Models
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = @$"
-					SELECT {nameof(Inmueble.Id)}, Direccion, Uso, Tipo, Precio, Ambientes, Superficie, Latitud, Longitud, PropietarioId, Activo, p.Nombre, p.Apellido
+					SELECT {nameof(Inmueble.Id)}, i.Direccion, i.Uso, i.Tipo, i.Precio, i.Ambientes, i.Superficie, i.Latitud, i.Longitud, i.PropietarioId, i.Activo, p.Nombre, p.Apellido
 					FROM inmuebles i JOIN propietarios p ON i.PropietarioId = p.IdPropietario
 					WHERE PropietarioId=@idPropietario";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))

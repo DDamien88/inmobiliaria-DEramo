@@ -1,5 +1,6 @@
 using System.Data;
 using inmobiliariaDEramo.Models;
+using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 
 
@@ -21,8 +22,8 @@ namespace InmobiliariaDEramo.Models
 			using (MySqlConnection connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"INSERT INTO usuarios 
-					(Nombre, Apellido, Email, Clave, Avatar, Rol) 
-					VALUES (@nombre, @apellido, @email, @clave, @avatar, @rol);
+					(Nombre, Apellido, Email, Clave, Avatar, Rol, Activo) 
+					VALUES (@nombre, @apellido, @email, @clave, @avatar, @rol, 1);
 					SELECT LAST_INSERT_ID();";
 				using (MySqlCommand command = new MySqlCommand(sql, connection))
 				{
@@ -130,7 +131,7 @@ namespace InmobiliariaDEramo.Models
 			using (MySqlConnection connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"SELECT 
-					Id, Nombre, Apellido, Avatar, Email, Clave, Rol 
+					Id, Nombre, Apellido, Avatar, Email, Clave, Rol, Activo
 					FROM usuarios
 					WHERE Id=@id";
 				using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -146,10 +147,11 @@ namespace InmobiliariaDEramo.Models
 							Id = reader.GetInt32("Id"),
 							Nombre = reader.GetString("Nombre"),
 							Apellido = reader.GetString("Apellido"),
-							Avatar = reader.GetString("Avatar"),
+							Avatar = reader["Avatar"] == DBNull.Value ? "" : reader.GetString("Avatar"),
 							Email = reader.GetString("Email"),
 							Clave = reader.GetString("Clave"),
 							Rol = reader.GetInt32("Rol"),
+							Activo = reader.GetBoolean("Activo"),
 						};
 					}
 					connection.Close();

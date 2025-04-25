@@ -35,8 +35,8 @@ namespace inmobiliariaDEramo.Controllers
 		}
 
 		// GET: Inquilino
-		[Route("[controller]/Index/{pagina:int?}")]
-		public ActionResult Index(int pagina = 1)
+		[HttpGet]
+		public ActionResult Index(int pagina = 1, int cantidad = 5)
 		{
 			try
 			{
@@ -48,7 +48,20 @@ namespace inmobiliariaDEramo.Controllers
 				// Si viene alguno valor por el tempdata, lo paso al viewdata/viewbag
 				if (TempData.ContainsKey("Mensaje"))
 					ViewBag.Mensaje = TempData["Mensaje"];
-				return View(lista);
+				// Paginado
+				int total = lista.Count;
+				int totalPaginas = (int)Math.Ceiling(total / (double)cantidad);
+
+				var inqPaginados = lista
+					.Skip((pagina - 1) * cantidad)
+					.Take(cantidad)
+					.ToList();
+
+				ViewBag.PaginaActual = pagina;
+				ViewBag.TotalPaginas = totalPaginas;
+				ViewBag.Cantidad = cantidad;
+
+				return View(inqPaginados);
 			}
 			catch (Exception ex)
 			{// Poner breakpoints para detectar errores

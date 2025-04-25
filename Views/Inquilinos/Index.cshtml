@@ -82,5 +82,22 @@
                 </td>
             </tr>
         }
+
+        <nav aria-label="Paginación"></nav>
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= (int)ViewBag.TotalPaginas; i++)
+            {
+                <li class="page-item @(i == (int)ViewBag.PaginaActual ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pagina="@i"
+                        asp-route-estado="@ViewBag.EstadoSeleccionado"
+                        asp-route-propietarioId="@ViewBag.PropietarioSeleccionado">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+        </nav>
+
+
     </tbody>
 </table>

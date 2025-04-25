@@ -32,8 +32,8 @@ namespace inmobiliariaDEramo.Controllers
 		}
 
 		// GET: Propietario
-		[Route("[controller]/Index/{pagina:int?}")]
-		public ActionResult Index(int pagina = 1)
+		[HttpGet]
+		public ActionResult Index(int pagina = 1, int cantidad = 5)
 		{
 			try
 			{
@@ -45,14 +45,30 @@ namespace inmobiliariaDEramo.Controllers
 				// Si viene alguno valor por el tempdata, lo paso al viewdata/viewbag
 				if (TempData.ContainsKey("Mensaje"))
 					ViewBag.Mensaje = TempData["Mensaje"];
-				return View(lista);
+				// Paginado
+				int total = lista.Count;
+				int totalPaginas = (int)Math.Ceiling(total / (double)cantidad);
+
+				var proPaginados = lista
+					.Skip((pagina - 1) * cantidad)
+					.Take(cantidad)
+					.ToList();
+
+				ViewBag.PaginaActual = pagina;
+				ViewBag.TotalPaginas = totalPaginas;
+				ViewBag.Cantidad = cantidad;
+
+				return View(proPaginados);
 			}
 			catch (Exception ex)
-			{//poner breakpoints para detectar errores
+			{
 				throw;
+
 
 			}
 		}
+
+
 
 		// GET: Propietario/Details/5
 		public ActionResult Details(int id)
@@ -367,6 +383,20 @@ namespace inmobiliariaDEramo.Controllers
 				throw;
 			}
 		}
+
+
+		[HttpGet]
+		public IActionResult Detalles(int id)
+		{
+			var propietario = repositorio.ObtenerPorId(id);
+			if (propietario == null) return NotFound();
+
+			var inmuebles = repositorioInmueble.BuscarPorPropietario(id);
+			ViewBag.Inmuebles = inmuebles;
+
+			return View(propietario);
+		}
+
 
 
 	}

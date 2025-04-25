@@ -23,7 +23,8 @@
 					<img src="@Model.Portada" class="img-thumbnail" style="max-width: 100%;" />
 					<form asp-controller="Inmuebles" asp-action="EliminarPortada" method="post" class="d-inline">
 						<input type="hidden" name="InmuebleId" value="@Id" />
-						<button type="submit" class="btn btn-danger btn-sm mt-2"><i class="fas fa-trash-alt"></i> Eliminar</button>
+						<button type="submit" class="btn btn-danger btn-sm mt-2"><i class="fas fa-trash-alt"></i>
+							Eliminar</button>
 					</form>
 				</div>
 			}
@@ -44,14 +45,17 @@
 				<label>Imágenes actuales:</label>
 				<div class="d-flex flex-wrap" id="galeriaActual">
 					@if (Model?.Imagenes?.Count > 0) foreach (var imagen in Model.Imagenes)
+						{
+							<div class="m-2 position-relative imagen-con-hover">
+								<img src="@imagen.Url" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
+								<button type="button" class="btn btn-danger btn-sm btn-eliminar-imagen"
+									onclick="eliminarImagen(@imagen.Id)">
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+						}
+					else
 					{
-						<div class="m-2 position-relative imagen-con-hover">
-							<img src="@imagen.Url" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
-							<button type="button" class="btn btn-danger btn-sm btn-eliminar-imagen" onclick="eliminarImagen(@imagen.Id)">
-								<i class="fas fa-times"></i>
-							</button>
-						</div>
-					} else {
 						<p>No hay imágenes interiores disponibles.</p>
 					}
 				</div>
@@ -59,8 +63,8 @@
 			<form id="formInterior" enctype="multipart/form-data" data-id="@Model?.Id" onsubmit="subirImagenes(event)">
 				<div class="form-group">
 					<label for="imagenes">Seleccionar imágenes</label>
-					<input type="file" class="form-control-file" id="imagenes" name="imagenes" onchange="previsualizar(event)"
-						accept="image/*" multiple required>
+					<input type="file" class="form-control-file" id="imagenes" name="imagenes"
+						onchange="previsualizar(event)" accept="image/*" multiple required>
 				</div>
 				<button type="submit" class="btn btn-success"><i class="fas fa-upload"></i> Subir</button>
 			</form>
@@ -73,7 +77,14 @@
 	</div>
 </div>
 
+
+
 @section Scripts {
+	@* <script>
+		if (window.notyf) {
+			notyf.success("Todo funcionando 🎉");
+		}
+	</script> *@
 	<script>
 		const id = @Id; // Obtener el ID del inmueble desde el modelo
 		function previsualizar(event) {
@@ -85,10 +96,10 @@
 				const reader = new FileReader();
 				reader.onload = function (e) {
 					$('#preview').append(`
-						<div class="m-2">
-							<img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
-						</div>
-					`);
+							<div class="m-2">
+								<img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
+							</div>
+						`);
 				};
 				reader.readAsDataURL(file);
 			});
@@ -108,7 +119,7 @@
 			}
 
 			$.ajax({
-				url: `@Url.Action("Alta", "Imagenes", new {Id=Id})`,
+				url: `@Url.Action("Alta", "Imagenes", new { Id = Id })`,
 				//url: `/Imagenes/Alta/${id}`,
 				type: 'POST',
 				data: formData,
@@ -126,7 +137,7 @@
 				$('#imagenes').val("");
 			});
 		}
-		
+
 		function eliminarImagen(imagenId) {
 			$.post(`/Imagenes/Eliminar/${imagenId}`).done(function (imagenes) {
 				notyf.success('Imagen eliminada');
@@ -137,23 +148,23 @@
 		}
 
 		function mostrarImagenes(imagenes) {
-	if (imagenes && imagenes.length > 0) {
-		let html = ``;
-		imagenes.forEach(img => {
-			html += `
-				<div class="m-2 position-relative imagen-con-hover">
-					<img src="${img.url}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
-					<button type="button" class="btn btn-danger btn-sm btn-eliminar-imagen" onclick="eliminarImagen(${img.id})">
-						<i class="fas fa-times"></i>
-					</button>
-				</div>
-			`;
-		});
-		$('#galeriaActual').html(html);
-	} else {
-		$('#galeriaActual').html('<p>No hay imágenes interiores disponibles.</p>');
-	}
-}
+			if (imagenes && imagenes.length > 0) {
+				let html = ``;
+				imagenes.forEach(img => {
+					html += `
+					<div class="m-2 position-relative imagen-con-hover">
+						<img src="${img.url}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
+						<button type="button" class="btn btn-danger btn-sm btn-eliminar-imagen" onclick="eliminarImagen(${img.id})">
+							<i class="fas fa-times"></i>
+						</button>
+					</div>
+				`;
+				});
+				$('#galeriaActual').html(html);
+			} else {
+				$('#galeriaActual').html('<p>No hay imágenes interiores disponibles.</p>');
+			}
+		}
 
 	</script>
 	<style>

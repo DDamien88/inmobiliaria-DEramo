@@ -4,17 +4,17 @@
 
 @{
     ViewData["Title"] = "Propietarios";
-    ViewData["Mensaje"] = ViewBag.Mensaje;
+    @* ViewData["Mensaje"] = ViewBag.Mensaje; *@
 }
 
 <h1>Propietarios</h1>
 
 @if (TempData["Mensaje"] != null)
 {
-	<div class="alert alert-warning alert-dismissible fade show" role="alert">
-		@TempData["Mensaje"]
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-	</div>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @TempData["Mensaje"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 }
 
 <p>
@@ -87,11 +87,28 @@
                             class="lnr lnr-cross"></span>Eliminar</a>
                     <a asp-action="Activar" asp-route-id="@item.IdPropietario" title="Activar"><span
                             class="lnr lnr-cross"></span>Activar</a>
+                    <a asp-controller="Propietarios" asp-action="Detalles" asp-route-id="@item.IdPropietario"
+                        title="Detalles"><span class="lnr lnr-cross"></span>Propiedades</a>
                     @* <a asp-action="PorPropietario" asp-controller="Inmuebles" asp-route-id="@item.IdPropietario"
                         title="Mis Propiedades"><span class="lnr lnr-apartment"></span></a>
                     @Html.ActionLink("Mis Propiedades", "PorPropietario", "Inmuebles", new { id = item.IdPropietario }) *@
                 </td>
             </tr>
         }
+
+        <nav aria-label="Paginación"></nav>
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= (int)ViewBag.TotalPaginas; i++)
+            {
+                <li class="page-item @(i == (int)ViewBag.PaginaActual ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pagina="@i"
+                        asp-route-estado="@ViewBag.EstadoSeleccionado"
+                        asp-route-propietarioId="@ViewBag.PropietarioSeleccionado">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+        </nav>
     </tbody>
 </table>

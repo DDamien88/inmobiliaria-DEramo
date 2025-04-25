@@ -318,7 +318,7 @@ namespace inmobiliariaDEramo.Controllers
 
         //     // GET: Inmueble/Eliminar/5
         [Authorize(Policy = "Administrador")]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         public ActionResult Eliminar(int id)
         {
             var entidad = repositorio.ObtenerPorId(id);
